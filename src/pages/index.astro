@@ -1,8 +1,26 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Hero from '../components/Hero.tsx';
+import Hero from '../components/home/Hero.astro';
+import { getPosts } from '../lib/posts';
+import { PROJECTS } from '../data/projects';
+import { PROFILE } from '../data/profile';
+
+const posts = await getPosts();
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: PROFILE.name,
+  url: 'https://hxtqy.com',
+  sameAs: ['https://github.com/hxtqy'],
+  description: PROFILE.tagline,
+};
 ---
 
-<BaseLayout title="hxtqy" description="hxtqy 的个人网站">
-  <Hero client:load />
+<BaseLayout
+  title="hxtqy · 千面之眼"
+  description={`${PROFILE.tagline} CS / AI / Math / Poem 四类笔记。`}
+  jsonLd={jsonLd}
+>
+  <Hero postCount={posts.length} projectCount={PROJECTS.length} />
 </BaseLayout>

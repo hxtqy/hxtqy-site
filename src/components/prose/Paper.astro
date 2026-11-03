@@ -1,0 +1,27 @@
+---
+interface Props {
+  title: string;
+  authors?: string[];
+  venue?: string;
+  year?: number;
+  url?: string;
+}
+
+const { title, authors = [], venue, year, url } = Astro.props;
+
+const meta = [authors.join(', '), [venue, year].filter(Boolean).join(' ')].filter(Boolean).join(' · ');
+---
+
+<div class="paper-card">
+  <span class="paper-card__title">{title}</span>
+  {meta && <p class="paper-card__meta">{meta}</p>}
+  {
+    url && (
+      <div class="paper-card__links">
+        <a href={url} target="_blank" rel="noopener">
+          原文 ↗
+        </a>
+      </div>
+    )
+  }
+</div>

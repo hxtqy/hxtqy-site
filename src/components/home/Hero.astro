@@ -1,0 +1,279 @@
+---
+import { PROFILE } from '../../data/profile';
+
+interface Props {
+  postCount: number;
+  projectCount: number;
+}
+
+const { postCount, projectCount } = Astro.props;
+
+// 静态虹膜的刻度：不依赖 WebGL 也成立的构图
+const ticks = Array.from({ length: 120 }, (_, i) => {
+  const angle = (i / 120) * Math.PI * 2;
+  const major = i % 30 === 0;
+  const minor = i % 10 === 0;
+  const inner = 1.015;
+  const outer = major ? 1.16 : minor ? 1.075 : 1.045;
+  const x1 = Math.cos(angle) * inner;
+  const y1 = Math.sin(angle) * inner;
+  const x2 = Math.cos(angle) * outer;
+  const y2 = Math.sin(angle) * outer;
+  return { x1, y1, x2, y2, major, minor };
+});
+
+const dust = [
+  [0.42, -1.32], [-0.86, -1.05], [1.14, -0.72], [-1.28, 0.46], [0.92, 1.18],
+  [-0.35, 1.36], [1.32, 0.78], [-1.05, -0.62], [0.66, 1.48], [-1.42, -0.18],
+];
+
+const rows = [
+  {
+    n: '01',
+    id: 'about',
+    href: '/about',
+    title: '关于',
+    desc: '个人档案、在做什么，以及联系方式。',
+    meta: 'PROFILE',
+  },
+  {
+    n: '02',
+    id: 'writing',
+    href: '/writing',
+    title: '写作',
+    desc: 'CS / AI / Math / Poem 四类笔记。',
+    meta: `${postCount} 篇`,
+  },
+  {
+    n: '03',
+    id: 'projects',
+    href: '/projects',
+    title: '项目',
+    desc: '在维护的仓库与实验。',
+    meta: `${projectCount} 个`,
+  },
+];
+---
+
+<section class="hero" data-hero>
+  <div class="hero__stage" aria-hidden="true">
+    <div class="iris-static">
+      <svg viewBox="-1.3 -1.3 2.6 2.6" role="presentation" focusable="false">
+        <defs>
+          <radialGradient id="iris-pupil" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.22" />
+            <stop offset="55%" stop-color="var(--gold)" stop-opacity="0.05" />
+            <stop offset="100%" stop-color="var(--gold)" stop-opacity="0" />
+          </radialGradient>
+          <radialGradient id="iris-halo" cx="50%" cy="50%" r="50%">
+            <stop offset="52%" stop-color="var(--violet)" stop-opacity="0.10" />
+            <stop offset="100%" stop-color="var(--violet)" stop-opacity="0" />
+          </radialGradient>
+          <radialGradient id="iris-core" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--pupil)" stop-opacity="0.98" />
+            <stop offset="72%" stop-color="var(--pupil)" stop-opacity="0.92" />
+            <stop offset="100%" stop-color="var(--pupil)" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* 光晕交给 CSS 背景，静态层不再画大圆（白天会变成灰盘） */}
+
+        {/* 仪器环：外圈双线 + 偏移 2° 的椭圆（"结构本身有点不对"） */}
+        <ellipse
+          cx="0"
+          cy="0"
+          rx="1.12"
+          ry="1.06"
+          fill="none"
+          stroke="var(--line-strong)"
+          stroke-opacity="0.5"
+          stroke-width="0.003"
+          transform="rotate(-2.2)"
+        />
+        <circle cx="0" cy="0" r="1.02" fill="none" stroke="var(--line-strong)" stroke-width="0.004" />
+        <circle cx="0" cy="0" r="0.985" fill="none" stroke="var(--limbus)" stroke-opacity="0.55" stroke-width="0.018" />
+        <circle cx="0" cy="0" r="0.78" fill="none" stroke="var(--line)" stroke-width="0.0028" />
+        <circle cx="0" cy="0" r="0.55" fill="none" stroke="var(--line)" stroke-width="0.0024" />
+
+        {/* 瞳孔：静态层也要有一只"眼"，否则降级时只剩一圈环 */}
+        <circle data-static-pupil cx="0" cy="0" r="0.30" fill="url(#iris-core)" />
+        <circle data-static-pupil cx="0" cy="0" r="0.30" fill="none" stroke="var(--gold)" stroke-opacity="0.4" stroke-width="0.004" />
+
+        {/* 角膜高光 */}
+        <circle data-static-pupil cx="-0.3" cy="0.3" r="0.055" fill="var(--catch)" opacity="0.16" />
+        <circle data-static-pupil cx="-0.3" cy="0.3" r="0.02" fill="var(--catch)" opacity="0.3" />
+
+        <g stroke-linecap="round">
+          {
+            ticks.map((tick) => (
+              <line
+                x1={tick.x1}
+                y1={tick.y1}
+                x2={tick.x2}
+                y2={tick.y2}
+                stroke={tick.major ? 'var(--gold)' : 'var(--line-strong)'}
+                stroke-opacity={tick.major ? 0.85 : tick.minor ? 0.5 : 0.28}
+                stroke-width={tick.major ? 0.006 : 0.003}
+              />
+            ))
+          }
+        </g>
+
+        {/* 偏心标记：一处"不该在这里"的小刻痕 */}
+        <circle cx="0.66" cy="-0.58" r="0.012" fill="none" stroke="var(--gold)" stroke-opacity="0.5" stroke-width="0.004" />
+        <line x1="0.63" y1="-0.61" x2="0.69" y2="-0.55" stroke="var(--gold)" stroke-opacity="0.35" stroke-width="0.003" />
+
+        <g fill="var(--text-3)">
+          {dust.map(([x, y], index) => (
+            <circle cx={x} cy={y} r={index % 3 === 0 ? 0.008 : 0.005} opacity={index % 2 === 0 ? 0.55 : 0.3} />
+          ))}
+        </g>
+      </svg>
+    </div>
+
+    <canvas class="iris-canvas" data-iris></canvas>
+
+    {/* 夜间的"观察介质"：只在眼睛周围雾化，不是一张玻璃卡片 */}
+    <div class="iris-lens" aria-hidden="true"></div>
+  </div>
+
+  <div class="hero__veil" aria-hidden="true"></div>
+
+  <div class="shell hero__inner" data-hero-copy>
+    <p class="hero__eyebrow" data-reveal>HXTQY · OBSERVATORY · 2026</p>
+
+    <h1 class="hero__title" data-reveal>{PROFILE.title}</h1>
+
+    <p class="hero__lede" data-reveal>{PROFILE.tagline}</p>
+
+    <div class="hero__meta" data-reveal>
+      <a class="hero__scroll" href="#index">
+        <span class="hero__scroll-line" aria-hidden="true"></span>
+        向下 · SCROLL
+      </a>
+      <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-3); letter-spacing: 0.08em;">
+        {postCount} 篇笔记 · {projectCount} 个项目
+      </span>
+    </div>
+  </div>
+
+  <div class="hero__ticks" aria-hidden="true">
+    {rows.map((row) => <span data-tick={row.id}>{row.n}</span>)}
+  </div>
+</section>
+
+<section class="shell index-band" id="index" aria-label="站点索引">
+  {
+    rows.map((row) => (
+      <a class="index-row" href={row.href} id={row.id}>
+        <span class="index-row__num">{row.n}</span>
+        <span class="index-row__title">{row.title}</span>
+        <span class="index-row__meta">{row.meta}</span>
+        <p class="index-row__desc">{row.desc}</p>
+      </a>
+    ))
+  }
+</section>
+
+<script>
+  /* -------------------------------------------------------------------------
+     1) 入场：只动 transform，不动 opacity。
+        这样即使标签页被节流、ticker 不推进，文字也只是偏移 18px，而不是隐形。
+     2) 粒子：能力探测通过后才动态加载 three.js 与渲染器。
+     ------------------------------------------------------------------------- */
+
+  const revealTargets = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+  // ?reduced=1 / ?noiris=1 是给验收用的测试钩子：走的是与真实条件完全相同的分支
+  const testFlags = new URLSearchParams(location.search);
+  const prefersReduced =
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches || testFlags.get('reduced') === '1';
+  const forceNoWebGL = testFlags.get('noiris') === '1';
+
+  if (!prefersReduced && document.visibilityState === 'visible' && revealTargets.length > 0) {
+    revealTargets.forEach((el) => {
+      el.style.willChange = 'transform';
+    });
+
+    import('gsap')
+      .then(({ gsap }) => {
+        const tl = gsap.fromTo(
+          revealTargets,
+          { y: 18 },
+          {
+            y: 0,
+            duration: 0.9,
+            stagger: 0.075,
+            ease: 'power3.out',
+            onComplete: () => {
+              revealTargets.forEach((el) => {
+                el.style.willChange = '';
+              });
+            },
+          }
+        );
+
+        // 兜底：无论 ticker 是否推进，1.6s 后都落到终态
+        const finish = () => {
+          if (tl.progress() < 1) {
+            tl.kill();
+            revealTargets.forEach((el) => {
+              el.style.transform = '';
+              el.style.willChange = '';
+            });
+          }
+        };
+        window.setTimeout(finish, 1600);
+        document.addEventListener(
+          'visibilitychange',
+          () => {
+            if (document.visibilityState !== 'visible') finish();
+          },
+          { once: true }
+        );
+      })
+      .catch(() => {
+        revealTargets.forEach((el) => {
+          el.style.transform = '';
+        });
+      });
+  }
+
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-iris]');
+
+  if (canvas && !prefersReduced && !forceNoWebGL) {
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
+      ?.saveData;
+
+    let tier: 'high' | 'mid' | 'low' | null = null;
+
+    if (!saveData) {
+      try {
+        const probe = document.createElement('canvas');
+        const gl = probe.getContext('webgl2', { failIfMajorPerformanceCaveat: true });
+        if (gl) {
+          const maxTexture = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
+          const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
+          const narrow = window.innerWidth < 768;
+
+          if (maxTexture >= 4096 && memory >= 4 && !narrow) tier = 'high';
+          else if (maxTexture >= 2048) tier = memory >= 4 ? 'mid' : 'low';
+          else tier = 'low';
+
+          gl.getExtension('WEBGL_lose_context')?.loseContext();
+        }
+      } catch {
+        tier = null;
+      }
+    }
+
+    if (tier) {
+      import('../../scripts/iris/renderer')
+        .then((mod) => {
+          mod.start(canvas, tier as 'high' | 'mid' | 'low');
+        })
+        .catch(() => {
+          canvas.dataset.ready = 'false';
+        });
+    }
+  }
+</script>

@@ -1,0 +1,68 @@
+---
+title: Parseval 恒等式的一个短证明
+summary: 从正交投影的角度看傅里叶系数，Parseval 恒等式就只是勾股定理在希尔伯特空间里的样子。
+date: 2026-09-08
+category: math
+tags: [fourier, hilbert-space, proof]
+lang: zh-Hans
+difficulty: 3
+---
+
+import Theorem from '../../../components/prose/Theorem.astro';
+
+在 $L^2[-\pi,\pi]$ 上，函数系
+
+$$
+\left\{ \frac{1}{\sqrt{2\pi}},\ \frac{\cos nx}{\sqrt{\pi}},\ \frac{\sin nx}{\sqrt{\pi}} \right\}_{n \ge 1}
+$$
+
+是一组标准正交基。所谓 Parseval 恒等式，说的是对任意 $f \in L^2[-\pi,\pi]$，
+
+$$
+\frac{1}{\pi}\int_{-\pi}^{\pi} |f(x)|^2 \, dx
+= \frac{a_0^2}{2} + \sum_{n=1}^{\infty} \left( a_n^2 + b_n^2 \right) \tag{1}
+$$
+
+其中 $a_n, b_n$ 是通常的傅里叶系数。
+
+## 为什么它显然是"勾股定理"
+
+把 $f$ 看成希尔伯特空间里的一个向量，$\{e_k\}$ 是一组标准正交基。令 $c_k = \langle f, e_k \rangle$，那么
+
+$$
+\left\| f - \sum_{k=1}^{N} c_k e_k \right\|^2
+= \|f\|^2 - \sum_{k=1}^{N} |c_k|^2 \tag{2}
+$$
+
+这只是一次展开：交叉项因为正交性全部消失。于是 $\sum |c_k|^2 \le \|f\|^2$，且等号成立当且仅当 $f$ 落在闭包内。
+
+<Theorem kind="theorem" number="1" name="Parseval">
+  设 $\{e_k\}$ 是希尔伯特空间 $\mathcal{H}$ 的标准正交系，$f \in \mathcal{H}$。则
+  $\sum_{k} |\langle f, e_k \rangle|^2 \le \|f\|^2$，
+  且等号成立当且仅当 $f \in \overline{\mathrm{span}}\{e_k\}$。
+</Theorem>
+
+<Theorem kind="proof">
+  记 $S_N = \sum_{k=1}^{N} \langle f, e_k \rangle e_k$。由正交性，
+  $\langle f - S_N, S_N \rangle = 0$，故
+  $\|f\|^2 = \|f - S_N\|^2 + \|S_N\|^2 \ge \|S_N\|^2 = \sum_{k=1}^{N} |\langle f, e_k \rangle|^2$。
+  令 $N \to \infty$ 得不等式。等号成立意味着 $\|f - S_N\| \to 0$，即 $f$ 属于闭包；
+  反之若 $f$ 在闭包内，取逼近序列即得等号。
+</Theorem>
+
+## 和 (1) 式的对应
+
+把 $c_k = \langle f, e_k \rangle$ 展开成三角形式，就得到 (1) 式的右边。系数前的 $\pi$ 来自基向量的归一化因子，而不是别的东西——这正是"正交基"与"正交系"的区别。
+
+## 一个具体的检验
+
+取 $f(x) = x$。则 $a_n = 0$，$b_n = \frac{2(-1)^{n+1}}{n}$，于是
+
+$$
+\frac{1}{\pi}\int_{-\pi}^{\pi} x^2\,dx = \frac{2\pi^2}{3}
+= \sum_{n=1}^{\infty} \frac{4}{n^2}
+$$
+
+两边同除 4 再乘 $\pi^2/6$，就得到熟悉的 $\sum 1/n^2 = \pi^2/6$。
+
+也就是说，**巴塞尔问题的这个特例，是 Parseval 恒等式的一个直接推论**。

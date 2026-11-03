@@ -1,0 +1,21 @@
+---
+interface Props {
+  kind?: 'note' | 'pitfall' | 'warn';
+  label?: string;
+}
+
+const { kind = 'note', label } = Astro.props;
+
+const defaultLabels: Record<string, string> = {
+  note: '注意',
+  pitfall: '坑',
+  warn: '风险',
+};
+
+const text = label ?? defaultLabels[kind];
+---
+
+<aside class="callout" data-kind={kind}>
+  <span class="callout__label">{text}</span>
+  <slot />
+</aside>

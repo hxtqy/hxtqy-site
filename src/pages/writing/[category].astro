@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CategoryBar from '../../components/writing/CategoryBar.astro';
+import PostRow from '../../components/writing/PostRow.astro';
+import { CATEGORIES, CATEGORY_MAP, type CategoryKey } from '../../data/categories';
+import { categoriesOf, getPosts } from '../../lib/posts';
+
+export function getStaticPaths() {
+  return CATEGORIES.map((category) => ({
+    params: { category: category.slug },
+    props: { category: category.key },
+  }));
+}
+
+const { category } = Astro.props as { category: CategoryKey };
+const meta = CATEGORY_MAP[category];
+
+const all = await getPosts();
+const posts = all.filter((post) => post.data.category === category);
+const counts = categoriesOf(all);
+---
+
+<BaseLayout
+  title={`${meta.label} · 写作`}
+  description={`${meta.en} — ${meta.blurb}`}
+>
+  <div class="shell">
+    <header class="page-head">
+      <h1 class="page-head__title">{meta.label}</h1>
+      <p class="page-head__meta">{meta.en.toUpperCase()} · {posts.length} 篇</p>
+      <p class="page-head__lede">{meta.blurb}</p>
+    </header>
+
+    <CategoryBar active={category} counts={counts} total={all.length} />
+
+    <ul class="post-list">
+      {posts.map((post) => <li><PostRow post={post} /></li>)}
+      {
+        posts.length === 0 && (
+          <li style="padding: 48px 0; color: var(--text-3); font-family: var(--font-sans);">
+            这个分类还没有文章。
+          </li>
+        )
+      }
+    </ul>
+
+    <p style="margin-top: 40px; font-family: var(--font-sans); font-size: 0.875rem;">
+      <a href="/writing" style="color: var(--text-2);">← 返回全部文章</a>
+    </p>
+  </div>
+</BaseLayout>

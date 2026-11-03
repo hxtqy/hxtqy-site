@@ -1,0 +1,27 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+  /** 溢出到 52rem 的宽图 */
+  wide?: boolean;
+  /** 自动/手写图号 */
+  index?: string | number;
+}
+
+const { src, alt, caption, wide = false, index } = Astro.props;
+---
+
+<figure class:list={['figure', wide && 'figure--wide']}>
+  <div class="figure__frame">
+    <img src={src} alt={alt} loading="lazy" decoding="async" />
+  </div>
+  {
+    caption && (
+      <figcaption class="figure__caption">
+        {index !== undefined && <span class="figure__index">图 {index}</span>}
+        {caption}
+      </figcaption>
+    )
+  }
+</figure>

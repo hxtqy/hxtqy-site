@@ -1,0 +1,31 @@
+---
+import { CATEGORIES, type CategoryKey } from '../../data/categories';
+
+interface Props {
+  /** 当前高亮的分类；'all' 表示全部 */
+  active: CategoryKey | 'all';
+  counts: Array<{ key: CategoryKey; count: number }>;
+  total: number;
+}
+
+const { active, counts, total } = Astro.props;
+const countOf = (key: CategoryKey) => counts.find((item) => item.key === key)?.count ?? 0;
+---
+
+<nav class="category-bar" aria-label="文章分类">
+  <a href="/writing" aria-current={active === 'all' ? 'page' : undefined}>
+    全部<span class="category-bar__count">{total}</span>
+  </a>
+
+  {
+    CATEGORIES.map((category) => (
+      <a
+        href={`/writing/${category.slug}`}
+        aria-current={active === category.key ? 'page' : undefined}
+      >
+        {category.label}
+        <span class="category-bar__count">{countOf(category.key)}</span>
+      </a>
+    ))
+  }
+</nav>

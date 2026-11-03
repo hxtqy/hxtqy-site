@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CategoryBar from '../../components/writing/CategoryBar.astro';
+import PostRow from '../../components/writing/PostRow.astro';
+import { allTags, categoriesOf, getPosts } from '../../lib/posts';
+
+const posts = await getPosts();
+const counts = categoriesOf(posts);
+const total = posts.length;
+const tags = allTags(posts).slice(0, 12);
+const latest = posts[0]?.data.date;
+---
+
+<BaseLayout
+  title="写作"
+  description="CS、AI、Math、Poem 四类笔记：系统、论文、推导与诗。"
+>
+  <div class="shell">
+    <header class="page-head">
+      <h1 class="page-head__title">写作</h1>
+      <p class="page-head__meta">
+        {total} 篇 · 最近更新 {latest ? latest.toISOString().slice(0, 10) : '—'}
+      </p>
+      <p class="page-head__lede">
+        四类笔记共用一套版式，但各有各的语气：CS 是工程记录，AI 是论文拆解，Math 是推导，Poem 只有分行。
+      </p>
+    </header>
+
+    <CategoryBar active="all" counts={counts} total={total} />
+
+    <div class="writing-body">
+      <ul class="post-list">
+        {posts.map((post) => <li><PostRow post={post} /></li>)}
+        {
+          posts.length === 0 && (
+            <li style="padding: 48px 0; color: var(--text-3); font-family: var(--font-sans);">
+              还没有文章。把 Markdown 放进 src/content/posts 即可。
+            </li>
+          )
+        }
+      </ul>
+
+      {
+        tags.length > 0 && (
+          <aside class="writing-aside">
+            <p class="toc__title">TAGS</p>
+            <div class="tag-cloud">
+              {tags.map((tag) => (
+                <a href={`/tags/${encodeURIComponent(tag.tag)}`}>
+                  {tag.tag}
+                  <span class="category-bar__count">{tag.count}</span>
+                </a>
+              ))}
+            </div>
+          </aside>
+        )
+      }
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .writing-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
+    padding-top: 8px;
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+  }
+
+  .tag-cloud a {
+    color: var(--text-2);
+  }
+
+  .tag-cloud a:hover {
+    color: var(--gold);
+  }
+
+  @media (min-width: 1200px) {
+    .writing-body {
+      grid-template-columns: minmax(0, 1fr) 240px;
+    }
+
+    .writing-aside {
+      position: sticky;
+      top: calc(var(--nav-h) + 32px);
+      align-self: start;
+    }
+  }
+
+  @media (max-width: 1199px) {
+    .writing-aside {
+      order: 2;
+      border-top: 1px solid var(--line);
+      padding-top: 24px;
+    }
+  }
+</style>

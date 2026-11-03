@@ -1,0 +1,30 @@
+---
+interface Props {
+  kind?: 'theorem' | 'lemma' | 'definition' | 'corollary' | 'proof';
+  /** 编号，如 “2.1” */
+  number?: string;
+  /** 可选标题 */
+  name?: string;
+}
+
+const { kind = 'theorem', number, name } = Astro.props;
+
+const labels: Record<string, string> = {
+  theorem: '定理',
+  lemma: '引理',
+  definition: '定义',
+  corollary: '推论',
+  proof: '证明',
+};
+
+const labelText = number ? `${labels[kind]} ${number}` : labels[kind];
+const isProof = kind === 'proof';
+---
+
+<div class="theorem" data-kind={kind}>
+  <span class="theorem__label">
+    {labelText}{name ? ` · ${name}` : ''}
+  </span>
+  <slot />
+  {isProof && <span class="theorem__qed" aria-label="证明完毕">∎</span>}
+</div>

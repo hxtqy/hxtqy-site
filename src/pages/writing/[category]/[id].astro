@@ -1,0 +1,125 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { CATEGORY_MAP } from '../../../data/categories';
+import { getPosts, neighbours, postDate, postHref, postSlug, readingMinutes } from '../../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({
+    params: { category: post.data.category, id: postSlug(post) },
+    props: { post, all: posts },
+  }));
+}
+
+const { post, all } = Astro.props;
+const { Content, headings } = await render(post);
+
+const category = CATEGORY_MAP[post.data.category];
+const { prev, next } = neighbours(all, post);
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+
+const isPoem = post.data.category === 'poem';
+const dateLabel = postDate(post);
+const updatedLabel = post.data.updated ? post.data.updated.toISOString().slice(0, 10) : null;
+const minutes = readingMinutes(post);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.summary,
+  datePublished: post.data.date.toISOString(),
+  dateModified: (post.data.updated ?? post.data.date).toISOString(),
+  inLanguage: post.data.lang,
+  author: { '@type': 'Person', name: 'hxtqy' },
+  mainEntityOfPage: new URL(postHref(post), Astro.site).href,
+};
+---
+
+<BaseLayout title={post.data.title} description={post.data.summary} ogType="article" jsonLd={jsonLd}>
+  <div class="progress-bar" data-progress aria-hidden="true"></div>
+
+  <article class="article-shell shell">
+    <div class="article-grid">
+      <div>
+        <header class="article-head">
+          <nav class="crumbs" aria-label="面包屑">
+            <a href="/writing">写作</a>
+            <span aria-hidden="true">/</span>
+            <a href={`/writing/${category.slug}`}>{category.label}</a>
+            <span aria-hidden="true">/</span>
+            <time datetime={dateLabel}>{dateLabel}</time>
+          </nav>
+
+          <h1 class="article-title">{post.data.title}</h1>
+          <p class="article-dek">{post.data.summary}</p>
+
+          <div class="article-meta">
+            <span style={`color:${category.hue}`}>{category.label}</span>
+            <span aria-hidden="true">·</span>
+            <time datetime={dateLabel}>{dateLabel}</time>
+            {updatedLabel && <span>更新于 {updatedLabel}</span>}
+            <span aria-hidden="true">·</span>
+            <span>{minutes} min</span>
+
+            {
+              post.data.tags.length > 0 && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  {post.data.tags.map((tag) => (
+                    <a href={`/tags/${encodeURIComponent(tag)}`}>#{tag}</a>
+                  ))}
+                </>
+              )
+            }
+          </div>
+        </header>
+
+        <div class="prose" data-kind={isPoem ? 'poem' : undefined} lang={post.data.lang}>
+          <Content />
+        </div>
+
+        <nav class="pager" aria-label="文章导航">
+          {
+            prev ? (
+              <a href={postHref(prev)}>
+                <span class="pager__label">← 上一篇</span>
+                <span class="pager__title">{prev.data.title}</span>
+              </a>
+            ) : (
+              <span></span>
+            )
+          }
+          {
+            next ? (
+              <a class="pager__next" href={postHref(next)}>
+                <span class="pager__label">下一篇 →</span>
+                <span class="pager__title">{next.data.title}</span>
+              </a>
+            ) : (
+              <span></span>
+            )
+          }
+        </nav>
+      </div>
+
+      {
+        toc.length > 1 && (
+          <aside class="article-aside">
+            <nav class="toc toc--sticky" data-toc aria-label="目录">
+              <p class="toc__title">CONTENTS</p>
+              <ol>
+                {toc.map((heading) => (
+                  <li data-depth={heading.depth}>
+                    <a href={`#${heading.slug}`}>{heading.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </aside>
+        )
+      }
+    </div>
+  </article>
+</BaseLayout>

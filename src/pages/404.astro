@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 · 没有这一页" description="这个地址没有对应的页面。">
+  <div class="shell" style="padding-top: calc(var(--nav-h) + 12vh); min-height: 70svh;">
+    <p
+      style="font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.18em; color: var(--text-3);"
+    >
+      404 · NOT FOUND
+    </p>
+    <h1 style="font-size: clamp(2rem, 5vw, 3.25rem); margin: 20px 0 24px;">这里没有东西。</h1>
+    <p style="color: var(--text-2); max-width: 34rem;">
+      可能是链接过期了，也可能是这个页面还没写。可以回到首页，或者直接去看文章。
+    </p>
+
+    <div style="display: flex; gap: 24px; margin-top: 40px; font-family: var(--font-sans);">
+      <a href="/" style="color: var(--gold);">← 首页</a>
+      <a href="/writing" style="color: var(--gold);">写作</a>
+      <a href="/about" style="color: var(--gold);">关于</a>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,29 +1,79 @@
 ---
 import '../styles/global.css';
+import Nav from '../components/site/Nav.astro';
+import Footer from '../components/site/Footer.astro';
 
 interface Props {
   title?: string;
   description?: string;
+  /** 首页可以隐藏页脚，让索引带成为最后一屏 */
+  hideFooter?: boolean;
+  ogType?: 'website' | 'article';
+  /** 结构化数据（可选） */
+  jsonLd?: Record<string, unknown>;
 }
 
 const {
-  title = 'hxtqy',
-  description = 'hxtqy 的个人网站 · Personal website',
+  title = 'hxtqy · 千面之眼',
+  description = 'hxtqy 的个人网站：CS、AI、Math、Poem 四类笔记，以及一台会看向你的光学仪器。',
+  hideFooter = false,
+  ogType = 'website',
+  jsonLd,
 } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const pageTitle = title.includes('hxtqy') ? title : `${title} · hxtqy`;
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#07070b" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>{title}</title>
+    <link rel="canonical" href={canonical} />
+
+    <meta name="theme-color" content="#070910" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f2ea" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark light" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title="hxtqy" href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="hxtqy" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta name="twitter:card" content="summary" />
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    <!-- 主题引导：在首帧前决定明暗，避免闪烁。
+         本站的视觉身份是"冷夜"，因此默认深色；只有用户显式切换过才用存储值。 -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('hxtqy-theme');
+          document.documentElement.dataset.theme = stored === 'light' ? 'light' : 'dark';
+        } catch (e) {}
+      })();
+    </script>
   </head>
+
   <body>
-    <slot />
+    <a class="skip-link" href="#main">跳到正文</a>
+    <Nav />
+    <main id="main">
+      <slot />
+    </main>
+    {!hideFooter && <Footer />}
+    <slot name="scripts" />
+    <script>
+      import '../scripts/ui';
+    </script>
   </body>
 </html>

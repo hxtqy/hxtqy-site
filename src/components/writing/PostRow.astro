@@ -1,0 +1,23 @@
+---
+import { CATEGORY_MAP } from '../../data/categories';
+import { postDate, postHref, readingMinutes, type Post } from '../../lib/posts';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const category = CATEGORY_MAP[post.data.category];
+---
+
+<a class="post-row" href={postHref(post)}>
+  <span class="post-row__date">{postDate(post)}</span>
+  <span class="post-row__title">{post.data.title}</span>
+  <span class="post-row__meta">
+    <span class="dot" style={`background:${category.hue}`} aria-hidden="true"></span>
+    {category.label}
+    <span aria-hidden="true">·</span>
+    {readingMinutes(post)} min
+  </span>
+  <p class="post-row__summary">{post.data.summary}</p>
+</a>

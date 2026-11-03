@@ -1,0 +1,71 @@
+---
+title: 重读注意力：它到底在近似什么
+summary: 把 softmax 注意力还原成一种核平滑：查询在键上做加权平均，温度决定它有多"自信"。
+date: 2026-09-24
+category: ai
+tags: [transformer, attention, reading]
+lang: zh-Hans
+paper:
+  title: Attention Is All You Need
+  authors: [Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, Polosukhin]
+  venue: NeurIPS
+  year: 2017
+  url: https://arxiv.org/abs/1706.03762
+---
+
+import Paper from '../../../components/prose/Paper.astro';
+import Callout from '../../../components/prose/Callout.astro';
+
+<Paper
+  title="Attention Is All You Need"
+  authors={['Vaswani', 'Shazeer', 'Parmar', 'Uszkoreit', 'Jones', 'Gomez', 'Kaiser', 'Polosukhin']}
+  venue="NeurIPS"
+  year={2017}
+  url="https://arxiv.org/abs/1706.03762"
+/>
+
+第一次读这篇论文时，注意力被当成一个"机制"来记：Q、K、V 三个矩阵，点积、缩放、softmax、加权求和。第二次读，更值得问的是它**在函数意义上近似了什么**。
+
+## 从加权平均说起
+
+给定查询 $q$ 与一组键 $k_1,\dots,k_n$、值 $v_1,\dots,v_n$，注意力输出是
+
+$$
+\mathrm{Attn}(q) = \sum_{i=1}^{n} \frac{\exp(q \cdot k_i / \sqrt{d})}{\sum_j \exp(q \cdot k_j / \sqrt{d})} \, v_i \tag{1}
+$$
+
+这不是什么新算子，而是一个**核平滑估计**：用 $\exp(q\cdot k/\sqrt{d})$ 当作相似度核，对值做归一化加权平均。换成 Nadaraya–Watson 的语言，注意力就是
+
+$$
+\hat{f}(q) = \frac{\sum_i K(q, k_i)\, v_i}{\sum_i K(q, k_i)}, \qquad K(q,k) = e^{q\cdot k/\sqrt{d}}
+$$
+
+理解成核平滑之后，几个"经验设定"就有了理由。
+
+## 为什么除以根号 d
+
+若 $q$ 与 $k$ 的各维独立、均值 0、方差 1，则 $q \cdot k$ 的方差是 $d$。softmax 对输入的尺度极其敏感：方差随维度线性增长时，最大的那一项会迅速吞掉全部概率质量，梯度随之消失。
+
+除以 $\sqrt{d}$ 把点积的方差压回 1，让 softmax 停留在"有区分度但不饱和"的区间。这本质上是在**调温度**。
+
+| 温度 | softmax 行为 | 注意力的效果 |
+| --- | --- | --- |
+| 过高（除以过大的常数） | 接近均匀分布 | 退化为对所有位置求平均 |
+| 合适 | 有峰值但仍有梯度 | 聚焦而可训练 |
+| 过低 | 接近 one-hot | 梯度消失，只认一个位置 |
+
+## 一个容易忽略的点
+
+<Callout kind="note" label="观察">
+  注意力的输出是值的凸组合：所有输出都落在 $\{v_i\}$ 的凸包内。也就是说，单层注意力**不可能产生超出已存在表示范围的新向量**，它只能重新混合。信息增益来自后续的前馈层，而不是注意力本身。
+</Callout>
+
+这解释了为什么去掉 FFN 的 Transformer 会明显变弱：混合是路由，变换才是计算。
+
+## 读论文时的三个问题
+
+1. 这个模块**新增了什么函数类**？（注意力：凸组合式的路由）
+2. 它的**归纳偏置**是什么？（置换等变、局部性缺失，靠位置编码补）
+3. 它的**失败模式**在哪？（长序列上的注意力弥散、softmax 饱和）
+
+按这三问重读，比记住结构图更有用。

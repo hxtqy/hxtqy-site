@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { PROJECTS, sortedProjects } from '../data/projects';
+
+const projects = sortedProjects();
+const active = projects.filter((project) => project.status !== 'archived').length;
+---
+
+<BaseLayout
+  title="项目"
+  description="在维护的仓库与实验，点击直接前往 GitHub。"
+>
+  <div class="shell">
+    <header class="page-head">
+      <h1 class="page-head__title">项目</h1>
+      <p class="page-head__meta">{PROJECTS.length} 个 · {active} 个在维护</p>
+      <p class="page-head__lede">
+        这里只放还在动的东西。点任意一行直接去仓库——没有中间页，也没有截图墙。
+      </p>
+    </header>
+
+    <div role="list">
+      {
+        projects.map((project, index) => (
+          <a
+            class="project-row"
+            role="listitem"
+            href={project.repo}
+            target="_blank"
+            rel="noopener"
+            aria-label={`${project.name} — 在 GitHub 打开`}
+          >
+            <span class="project-row__num">{String(index + 1).padStart(2, '0')}</span>
+
+            {project.cover ? (
+              <span class="project-row__cover">
+                <img src={project.cover} alt="" loading="lazy" decoding="async" />
+              </span>
+            ) : (
+              <span class="project-row__cover project-row__cover--empty" aria-hidden="true">
+                <svg viewBox="-1 -1 2 2" width="56" height="56">
+                  <circle cx="0" cy="0" r="0.9" fill="none" stroke="var(--line-strong)" stroke-width="0.02" />
+                  <circle cx="0" cy="0" r="0.55" fill="none" stroke="var(--line)" stroke-width="0.015" />
+                  <circle cx="0" cy="0" r="0.2" fill="none" stroke="var(--gold)" stroke-opacity="0.5" stroke-width="0.03" />
+                </svg>
+              </span>
+            )}
+
+            <span>
+              <span class="project-row__title">{project.name}</span>
+              <span class="project-row__desc">{project.description}</span>
+              <span class="project-row__tags">
+                {project.tags.map((tag) => <span>{tag}</span>)}
+              </span>
+            </span>
+
+            <span class="project-row__arrow" aria-hidden="true">↗</span>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>

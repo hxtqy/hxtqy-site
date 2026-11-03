@@ -1,0 +1,33 @@
+---
+const year = new Date().getFullYear();
+const build = 'Astro 7 · Cloudflare Pages';
+---
+
+<footer class="site-footer">
+  <div class="shell">
+    <div class="site-footer__grid">
+      <div class="site-footer__col">
+        <p class="site-footer__label">SITEMAP</p>
+        <p><a href="/">首页</a></p>
+        <p><a href="/about">关于</a></p>
+        <p><a href="/writing">写作</a></p>
+        <p><a href="/projects">项目</a></p>
+      </div>
+
+      <div class="site-footer__col">
+        <p class="site-footer__label">FEEDS</p>
+        <p><a href="/rss.xml">RSS</a></p>
+        <p><a href="/sitemap-index.xml">Sitemap</a></p>
+        <p>
+          <a href="https://github.com/hxtqy" rel="me noopener" target="_blank">GitHub ↗</a>
+        </p>
+      </div>
+
+      <div class="site-footer__col">
+        <p class="site-footer__label">COLOPHON</p>
+        <p>© {year} hxtqy</p>
+        <p>{build}</p>
+      </div>
+    </div>
+  </div>
+</footer>

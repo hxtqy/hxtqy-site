@@ -1,0 +1,150 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { PROFILE, hasAnyPlaceholder } from '../data/profile';
+
+const showHint = hasAnyPlaceholder();
+---
+
+<BaseLayout
+  title="关于"
+  description={`关于 ${PROFILE.name}：档案、在做什么、兴趣与联系方式。`}
+>
+  <div class="shell">
+    <header class="page-head">
+      <h1 class="page-head__title">关于</h1>
+      <p class="page-head__meta">PROFILE · {new Date().getFullYear()}</p>
+    </header>
+
+    <div class="about-grid">
+      <aside class="portrait">
+        <div class="portrait__frame" aria-hidden="true">
+          <svg viewBox="-1 -1 2 2" width="180" height="180" role="presentation">
+            <circle cx="0" cy="0" r="0.92" fill="none" stroke="var(--line-strong)" stroke-width="0.006" />
+            <circle cx="0" cy="0" r="0.58" fill="none" stroke="var(--line)" stroke-width="0.005" />
+            <circle cx="0" cy="0" r="0.28" fill="none" stroke="var(--gold)" stroke-opacity="0.55" stroke-width="0.008" />
+            {Array.from({ length: 48 }, (_, i) => {
+              const angle = (i / 48) * Math.PI * 2;
+              const major = i % 12 === 0;
+              return (
+                <line
+                  x1={Math.cos(angle) * 0.95}
+                  y1={Math.sin(angle) * 0.95}
+                  x2={Math.cos(angle) * (major ? 1.06 : 1.0)}
+                  y2={Math.sin(angle) * (major ? 1.06 : 1.0)}
+                  stroke={major ? 'var(--gold)' : 'var(--line-strong)'}
+                  stroke-opacity={major ? 0.8 : 0.4}
+                  stroke-width="0.006"
+                />
+              );
+            })}
+          </svg>
+        </div>
+        <p class="portrait__caption">
+          图 1 · 占位图形。替换成一张 4:5 的照片：把图片放进 src/assets/，再改这里的 &lt;img&gt;。
+        </p>
+      </aside>
+
+      <div>
+        <div class="prose" lang="zh-Hans">
+          {PROFILE.intro.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+
+        <section class="about-section">
+          <h2>现在</h2>
+          <dl class="kv">
+            {
+              PROFILE.now.map((item) => (
+                <>
+                  <dt>{item.label}</dt>
+                  <dd>
+                    {item.value}
+                    {item.placeholder && <span class="placeholder-mark">占位</span>}
+                  </dd>
+                </>
+              ))
+            }
+          </dl>
+        </section>
+
+        <section class="about-section">
+          <h2>轨迹</h2>
+          <ul class="timeline">
+            {
+              PROFILE.timeline.map((item) => (
+                <li data-now={item.now ? 'true' : undefined}>
+                  <span class="timeline__year">{item.year}</span>
+                  <p class="timeline__text">
+                    {item.text}
+                    {item.placeholder && <span class="placeholder-mark">占位</span>}
+                  </p>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <section class="about-section">
+          <h2>兴趣</h2>
+          <p style="color: var(--text-2); margin: 0;">{PROFILE.interests.join(' · ')}</p>
+        </section>
+
+        <section class="about-section">
+          <h2>联系</h2>
+          <dl class="kv">
+            {
+              PROFILE.contacts.map((contact) => (
+                <>
+                  <dt>{contact.label}</dt>
+                  <dd>
+                    <a
+                      href={contact.href}
+                      rel={contact.external ? 'me noopener' : undefined}
+                      target={contact.external ? '_blank' : undefined}
+                      style="color: var(--gold);"
+                    >
+                      {contact.placeholder ? '待填写' : contact.href.replace(/^mailto:|^https?:\/\//, '')}
+                      {contact.external ? ' ↗' : ''}
+                    </a>
+                    {contact.placeholder && <span class="placeholder-mark">占位</span>}
+                  </dd>
+                </>
+              ))
+            }
+          </dl>
+        </section>
+
+        {
+          showHint && (
+            <p class="placeholder-note">
+              标有「占位」的条目是明确的占位内容。替换 src/data/profile.ts 即可更新本页，无需改动模板。
+            </p>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .placeholder-mark {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 1px 6px;
+    border: 1px solid var(--line-strong);
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+    vertical-align: 2px;
+  }
+
+  .placeholder-note {
+    margin-top: 56px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--text-3);
+  }
+</style>
